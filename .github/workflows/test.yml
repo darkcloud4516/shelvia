@@ -1,0 +1,63 @@
+name: CI — tests
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.11, 3.12]
+    env:
+      API_KEY: supersecretkey
+      SHELVIA_DATABASE_URL: sqlite:///./test.db
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run tests (pytest)
+        continue-on-error: false
+        run: |
+          rm -f test.db test.db-shm test.db-wal || true
+          mkdir -p reports
+          pytest -q --junitxml=reports/junit.xml -o log_cli=true
+        env:
+          SHELVIA_DATABASE_URL: ${{ env.SHELVIA_DATABASE_URL }}
+          API_KEY: ${{ env.API_KEY }}
+
+      - name: Upload pytest junit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-junit
+          path: reports/junit.xml
+
+      - name: Upload test DB for debugging
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-db
+          path: test.db
