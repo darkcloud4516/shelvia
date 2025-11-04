@@ -1,8 +1,7 @@
 from logging.config import fileConfig
 import os
 from sqlalchemy import create_engine, pool
-from alembic import context
-from sqlalchemy.engine.url import make_url
+from alembic import context  # type: ignore[attr-defined]
 
 config = context.config
 
@@ -13,9 +12,10 @@ if config.config_file_name is not None:
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./test.db")
 config.set_main_option("sqlalchemy.url", DATABASE_URL)
 
-from sqlmodel import SQLModel
-import models
+from sqlmodel import SQLModel  # noqa: E402
+
 target_metadata = SQLModel.metadata
+
 
 def run_migrations_offline():
     url = config.get_main_option("sqlalchemy.url")
@@ -28,6 +28,7 @@ def run_migrations_offline():
     with context.begin_transaction():
         context.run_migrations()
 
+
 def run_migrations_online():
     url = config.get_main_option("sqlalchemy.url")
     # create engine directly from URL
@@ -36,6 +37,7 @@ def run_migrations_online():
         context.configure(connection=connection, target_metadata=target_metadata)
         with context.begin_transaction():
             context.run_migrations()
+
 
 if context.is_offline_mode():
     run_migrations_offline()
