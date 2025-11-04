@@ -1,12 +1,22 @@
+# virtualenv
+.venv/
+venv/
+env/
+
+# python
 __pycache__/
 *.pyc
-.env
-venv/
-.env.*
-*.sqlite3
-*.db
-instance/
-*.egg-info/
-.DS_Store
-docker-compose.override.yml
-pgdata/
+*.pyo
+*.pyd
+
+# test db / reports / backups
+test.db
+test.db-shm
+test.db-wal
+reports/
+*.bak
+
+# editor
+.vscode/
+.idea/
+*.swp
