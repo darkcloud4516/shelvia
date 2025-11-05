@@ -1,16 +1,27 @@
 import os
-from fastapi import HTTPException, Security
-from fastapi.security.api_key import APIKeyHeader
-from typing import Optional
+from fastapi import HTTPException, status
 
-API_KEY_NAME = "x-api-key"
-api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=False)
+def get_api_key() -> str | None:
+    """
+    Runtime olarak çevresel değişkenden API_KEY okur.
+    Testlerde veya CI'da pytest/conftest.py ile ayarlanmış olmalıdır.
+    """
+    return os.getenv("API_KEY")
 
-
-def get_api_key(api_key: Optional[str] = Security(api_key_header)):
-    expected = os.environ.get("SHELVIA_API_KEY")
-    if expected is None:
-        raise HTTPException(status_code=500, detail="API key not configured on server")
-    if not api_key or api_key != expected:
-        raise HTTPException(status_code=401, detail="Unauthorized")
-    return api_key
+def require_api_key(x_api_key: str):
+    """
+    İstek başına çağrılacak doğrulama fonksiyonu.
+    - Eğer sunucuda API_KEY yapılandırılmamışsa 500 döner.
+    - Eğer gelen header eşleşmiyorsa 401 döner.
+    """
+    API_KEY = get_api_key()
+    if API_KEY is None:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="API key not configured on server",
+        )
+    if x_api_key != API_KEY:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid API key",
+        )
