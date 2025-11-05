@@ -20,3 +20,15 @@ reports/
 .vscode/
 .idea/
 *.swp
+.venv/
+*.pyc
+__pycache__/
+test.db
+*.bak
+reports/
+.venv/
+*.pyc
+__pycache__/
+test.db
+*.bak
+reports/
