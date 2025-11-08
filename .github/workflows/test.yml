@@ -52,12 +52,16 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: pytest-junit
+          name: pytest-junit-${{ github.run_id }}
           path: reports/junit.xml
+          if-no-files-found: warn
+          overwrite: true
+
 
       - name: Upload test DB for debugging
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: test-db
+          name: test-db-${{ github.run_id }}
           path: test.db
+          if-no-files-found: warn
